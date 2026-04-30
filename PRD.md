@@ -3,7 +3,7 @@
 > A self-contained, fully local ecommerce web application. No cloud services required.
 > All data lives in a local SQLite file. Stripe runs in test mode against the local server.
 
-**Last updated:** 2026-04-30 (Phase 0 complete)
+**Last updated:** 2026-04-30 (Phase 1 complete)
 **Target environment:** macOS / local development only
 **Node runtime:** ≥ 20.9 (required by Next 16 + better-sqlite3 12)
 
@@ -201,21 +201,33 @@ Each phase ends with a runnable, demoable state. Estimated effort assumes one en
 
 ---
 
-### Phase 1 — Foundation: Next 16 + Tailwind v4 + shadcn (~1–2 h)
+### Phase 1 — Foundation: Next 16 + Tailwind v4 + shadcn (~1–2 h) ✅ Completed 2026-04-30
 
-- [ ] `pnpm dlx create-next-app@latest .` → TypeScript, ESLint, App Router, Turbopack, src dir = no, import alias `@/*`
-- [ ] Verify `next@16.2.4`, `react@19.2.5`, `react-dom@19.2.5` in `package.json`
-- [ ] Pin TypeScript to `5.9.x` (override the create-next-app default if it ships 6.x)
-- [ ] Replace default Tailwind setup with v4: `pnpm add -D tailwindcss@4.2.4 @tailwindcss/postcss@4.2.4 postcss`
-- [ ] `postcss.config.mjs` exports `{ plugins: { '@tailwindcss/postcss': {} } }`
-- [ ] `app/globals.css`: `@import "tailwindcss";` + `@theme { ... }` design tokens (colors, radii, fonts)
-- [ ] Init shadcn: `pnpm dlx shadcn@4.6.0 init` — choose Neutral base color, CSS variables ON
-- [ ] Add starter primitives: `button card input label dropdown-menu sheet dialog toast skeleton form badge separator`
-- [ ] Install `lucide-react@1.14.0`, `next-themes@0.4.6`, `sonner@2.0.7`
-- [ ] Build `app/layout.tsx`: `<ThemeProvider>`, `<Toaster />`, root `<header>` (logo, nav, search, cart icon, account dropdown), `<footer>`
-- [ ] Build a placeholder home page hero so the dev server renders something real
+- [x] ~~`pnpm dlx create-next-app@latest .`~~ — Skipped: Phase 0 had already populated the repo with `package.json`, prettier config, git hooks, etc. Scaffolded manually instead to avoid clobbering existing tooling
+- [x] Verify `next@16.2.4`, `react@19.2.5`, `react-dom@19.2.5` in `package.json`
+- [x] Pin TypeScript to `5.9.x` (resolved to `5.9.3`)
+- [x] Tailwind v4 installed: `tailwindcss@4.2.4`, `@tailwindcss/postcss@4.2.4`, `postcss`
+- [x] `postcss.config.mjs` exports `{ plugins: { '@tailwindcss/postcss': {} } }`
+- [x] `app/globals.css`: `@import "tailwindcss"`, `@import "tw-animate-css"`, `@import "shadcn/tailwind.css"`, `@theme` design tokens, full shadcn neutral palette light + dark, `--font-sans` mapped to a system font stack
+- [x] Init shadcn 4.6.0 (`--yes --defaults --force`); `components.json` configured with `baseColor: neutral`, `cssVariables: true`, `tsx: true`. Style is `base-nova` (built on `@base-ui/react`, not Radix — primitives use a `render` prop instead of `asChild`)
+- [x] Added shadcn primitives: `button card input label dropdown-menu sheet dialog skeleton badge separator form`. **Note:** shadcn 4.x dropped its own `toast` primitive — toasts now come from `sonner`. The `form` primitive returned an empty registry item from `base-nova`, so it was hand-authored from the canonical default-style form
+- [x] Installed `lucide-react@1.14.0`, `next-themes@0.4.6`, `sonner@2.0.7`
+- [x] Built `app/layout.tsx`: `<ThemeProvider>` (next-themes, class strategy, system default, `disableTransitionOnChange`), `<Toaster richColors position="top-right" />`, `<Header />`, `<main>`, `<Footer />`. `suppressHydrationWarning` on `<html>`. Metadata exported
+- [x] Built `components/site/header.tsx`: sticky top, brand link, desktop nav (Home / Products / Categories), search form (GETs `/products?q=`), CSS-driven Sun/Moon theme toggle (no `useEffect` mounted-gate — uses `dark:hidden`/`dark:block` to satisfy React 19's `react-hooks/set-state-in-effect` rule), cart icon with badge, account dropdown (Sign in / Sign up / My orders / Profile), mobile `<Sheet>` hamburger menu
+- [x] Built `components/site/footer.tsx`: 4-column server-component grid (Brand / Shop / Account / About), separator, copyright + "Test mode" notice
+- [x] Built `app/page.tsx`: hero (Phase-1 badge, headline, description, "Browse products" CTA, "Try a toast" client-component button) and 3-card feature grid (Real catalog / Local cart & checkout / Admin dashboard)
+- [x] `package.json` scripts: `dev`, `build`, `start`, `lint` (ESLint flat config — Next 16 dropped the `next lint` subcommand), `typecheck`. `lint-staged` extended to run `eslint --fix` on `.{ts,tsx,js,jsx,mjs,cjs}` (was deferred from Phase 0)
+- [x] `.gitignore` already covered `.next/`, `out/`, `next-env.d.ts`
 
-**Exit criteria:** `pnpm dev` shows a styled home page with working dark-mode toggle and a toast button. No console errors.
+**Phase 1 dependencies installed (alongside transitive deps):** `next@16.2.4`, `react@19.2.5`, `react-dom@19.2.5`, `lucide-react@1.14.0`, `next-themes@0.4.6`, `sonner@2.0.7`, `react-hook-form@7.74.0`, `@hookform/resolvers@3.10.0`, `zod@3.25.76`, `class-variance-authority`, `clsx`, `tailwind-merge`, `tw-animate-css`, `@base-ui/react`, `@radix-ui/react-label`, `@radix-ui/react-slot`, `shadcn` (CLI). Dev: `typescript@5.9.3`, `@types/node`, `@types/react@19.2.x`, `@types/react-dom@19.2.x`, `tailwindcss@4.2.4`, `@tailwindcss/postcss@4.2.4`, `postcss`, `eslint@9.x`, `eslint-config-next@16.2.4`.
+
+**Phase 1 deviations:**
+
+- **No Google Fonts.** PRD §1 says "no cloud services required" — `next/font/google` does a build-time fetch from Google. Replaced Geist with a system font stack mapped to `--font-sans` in `globals.css`.
+- **shadcn primitives use `@base-ui/react`** (Base UI's `render` prop) instead of Radix's `asChild`. This is the `base-nova` style's design and is consistent across all primitives. UI code follows the project pattern (e.g. `<Button render={<Link href="/products" />}>…</Button>`).
+- **Project-local pnpm store** pinned via `.npmrc` (`store-dir=./.pnpm-store`) so shadcn's nested `pnpm add` calls share the same store as the rest of the workspace.
+
+**Exit criteria:** ✅ `pnpm typecheck`, `pnpm lint`, and `pnpm build` all pass clean. Static prerender of `/` and `/_not-found` succeeds (3 routes). Dev server (`pnpm dev`) renders a styled home page with the dark-mode toggle and toast button.
 
 ---
 
