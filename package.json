@@ -1,0 +1,29 @@
+{
+  "name": "ecommerce",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=20.9"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "simple-git-hooks"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "prettier": "^3.0.0",
+    "prettier-plugin-tailwindcss": "^0.6.0",
+    "simple-git-hooks": "^2.0.0",
+    "lint-staged": "^16.0.0"
+  }
+}

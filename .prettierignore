@@ -1,0 +1,11 @@
+node_modules
+.pnpm-store
+pnpm-lock.yaml
+.next
+dist
+build
+coverage
+cache
+snapshots
+.git
+.DS_Store

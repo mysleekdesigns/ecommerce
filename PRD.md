@@ -3,7 +3,7 @@
 > A self-contained, fully local ecommerce web application. No cloud services required.
 > All data lives in a local SQLite file. Stripe runs in test mode against the local server.
 
-**Last updated:** 2026-04-30
+**Last updated:** 2026-04-30 (Phase 0 complete)
 **Target environment:** macOS / local development only
 **Node runtime:** ≥ 20.9 (required by Next 16 + better-sqlite3 12)
 
@@ -14,6 +14,7 @@
 Build a feature-complete ecommerce website that can be cloned, `npm install`-ed, and run locally with **zero external accounts** beyond an optional Stripe test key. The app should feel like a real production storefront (catalog, cart, auth, checkout, admin) but never depend on a hosted database, hosted auth, or hosted asset store.
 
 ### Non-goals (explicitly out of scope for the local build)
+
 - Cloud deployment, CI/CD, domain setup
 - Hosted databases (Postgres, Turso, Neon, Supabase, etc.)
 - Hosted auth providers (Clerk, Auth0)
@@ -26,39 +27,44 @@ Build a feature-complete ecommerce website that can be cloned, `npm install`-ed,
 ## 2. Tech Stack (locked versions, verified Apr 30, 2026)
 
 ### Core
-| Layer | Choice | Version | Why |
-|---|---|---|---|
-| Framework | Next.js (App Router) | `16.2.4` | Latest stable; React Server Components, Server Actions, Turbopack |
-| UI runtime | React + React DOM | `19.2.5` | Required peer of Next 16; Server Components, `useFormState`, `useOptimistic` |
-| Language | TypeScript | `5.9.x` | Pinning 5.9 over the brand-new 6.0.3 — ecosystem (shadcn, RHF, Drizzle devDeps) is still on 5.x. Bump after a few months once tooling catches up. |
-| Styling | Tailwind CSS + `@tailwindcss/postcss` | `4.2.4` | CSS-first config via `@theme`; no `tailwind.config.js` needed |
-| Components | shadcn/ui CLI | `4.6.0` | Radix-based, copy-paste primitives, full Tailwind v4 compat |
-| Icons | lucide-react | `1.14.0` | shadcn default |
-| Theming | next-themes | `0.4.6` | Light/dark mode toggle |
-| Toasts | sonner | `2.0.7` | shadcn-recommended toast library |
+
+| Layer      | Choice                                | Version  | Why                                                                                                                                               |
+| ---------- | ------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework  | Next.js (App Router)                  | `16.2.4` | Latest stable; React Server Components, Server Actions, Turbopack                                                                                 |
+| UI runtime | React + React DOM                     | `19.2.5` | Required peer of Next 16; Server Components, `useFormState`, `useOptimistic`                                                                      |
+| Language   | TypeScript                            | `5.9.x`  | Pinning 5.9 over the brand-new 6.0.3 — ecosystem (shadcn, RHF, Drizzle devDeps) is still on 5.x. Bump after a few months once tooling catches up. |
+| Styling    | Tailwind CSS + `@tailwindcss/postcss` | `4.2.4`  | CSS-first config via `@theme`; no `tailwind.config.js` needed                                                                                     |
+| Components | shadcn/ui CLI                         | `4.6.0`  | Radix-based, copy-paste primitives, full Tailwind v4 compat                                                                                       |
+| Icons      | lucide-react                          | `1.14.0` | shadcn default                                                                                                                                    |
+| Theming    | next-themes                           | `0.4.6`  | Light/dark mode toggle                                                                                                                            |
+| Toasts     | sonner                                | `2.0.7`  | shadcn-recommended toast library                                                                                                                  |
 
 ### Data
-| Layer | Choice | Version | Why |
-|---|---|---|---|
-| Database | SQLite (file) via better-sqlite3 | `12.9.0` | Zero infrastructure, single file, fast synchronous driver — ideal for local-only |
-| ORM | Drizzle ORM | `0.45.2` | Strong TS inference, lean runtime, first-class SQLite support |
-| Migrations | drizzle-kit | `0.31.10` | `drizzle-kit generate` + `migrate` workflow |
+
+| Layer      | Choice                           | Version   | Why                                                                              |
+| ---------- | -------------------------------- | --------- | -------------------------------------------------------------------------------- |
+| Database   | SQLite (file) via better-sqlite3 | `12.9.0`  | Zero infrastructure, single file, fast synchronous driver — ideal for local-only |
+| ORM        | Drizzle ORM                      | `0.45.2`  | Strong TS inference, lean runtime, first-class SQLite support                    |
+| Migrations | drizzle-kit                      | `0.31.10` | `drizzle-kit generate` + `migrate` workflow                                      |
 
 ### Auth & Payments
-| Layer | Choice | Version | Why |
-|---|---|---|---|
-| Auth | Better Auth + Drizzle adapter | `1.6.9` | Native Next 16 + Drizzle support; runs entirely local; email/password + sessions out of the box |
-| Payments | stripe (Node) + @stripe/stripe-js | `22.1.0` / `9.4.0` | Stripe Elements with **test keys** works fully offline against `stripe listen` for webhooks |
+
+| Layer    | Choice                            | Version            | Why                                                                                             |
+| -------- | --------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------- |
+| Auth     | Better Auth + Drizzle adapter     | `1.6.9`            | Native Next 16 + Drizzle support; runs entirely local; email/password + sessions out of the box |
+| Payments | stripe (Node) + @stripe/stripe-js | `22.1.0` / `9.4.0` | Stripe Elements with **test keys** works fully offline against `stripe listen` for webhooks     |
 
 ### Forms / state / images
-| Layer | Choice | Version |
-|---|---|---|
-| Form state | react-hook-form | `7.74.0` |
-| Validation | zod (v4) | `4.4.1` |
-| Cart store | zustand (with `persist` middleware) | `5.0.12` |
-| Image processing | sharp (transitive via Next image) | `0.34.5` |
+
+| Layer            | Choice                              | Version  |
+| ---------------- | ----------------------------------- | -------- |
+| Form state       | react-hook-form                     | `7.74.0` |
+| Validation       | zod (v4)                            | `4.4.1`  |
+| Cart store       | zustand (with `persist` middleware) | `5.0.12` |
+| Image processing | sharp (transitive via Next image)   | `0.34.5` |
 
 ### Tooling
+
 - **ESLint** (Next default flat config), **Prettier**, **simple-git-hooks** + **lint-staged** for pre-commit format/lint.
 - **pnpm** (recommended) or npm.
 
@@ -154,21 +160,21 @@ ecommerce/
 
 ## 4. Data Model (Drizzle schema, SQLite)
 
-| Table | Purpose | Key columns |
-|---|---|---|
-| `users` | Better Auth users | `id`, `email`, `name`, `email_verified`, `image`, `role` (`customer`/`admin`), timestamps |
-| `sessions` | Better Auth sessions | `id`, `user_id`, `expires_at`, `token`, `ip_address`, `user_agent` |
-| `accounts` | Better Auth OAuth accounts (future) | `id`, `user_id`, `provider`, `provider_account_id`, ... |
-| `verifications` | Better Auth email verification tokens | `id`, `identifier`, `value`, `expires_at` |
-| `categories` | Product categories | `id`, `slug`, `name`, `description`, `image_url`, `parent_id` (self-fk, nullable) |
-| `products` | Catalog item | `id`, `slug`, `name`, `description`, `price_cents`, `currency`, `category_id`, `inventory`, `is_published`, `created_at` |
-| `product_images` | Multiple images per product | `id`, `product_id`, `url`, `alt`, `position` |
-| `product_variants` | Optional size/color variants | `id`, `product_id`, `name`, `sku`, `price_cents`, `inventory` |
-| `addresses` | User saved addresses | `id`, `user_id`, `line1`, `line2`, `city`, `state`, `postal_code`, `country`, `is_default` |
-| `carts` | Persistent cart for logged-in users | `id`, `user_id`, `created_at`, `updated_at` |
-| `cart_items` | Cart line items | `id`, `cart_id`, `product_id`, `variant_id`, `quantity` |
-| `orders` | Placed orders | `id`, `user_id` (nullable for guest), `status`, `subtotal_cents`, `tax_cents`, `shipping_cents`, `total_cents`, `stripe_payment_intent_id`, `shipping_address_id`, `created_at` |
-| `order_items` | Order line items (snapshot prices) | `id`, `order_id`, `product_id`, `variant_id`, `name_snapshot`, `price_cents_snapshot`, `quantity` |
+| Table              | Purpose                               | Key columns                                                                                                                                                                     |
+| ------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`            | Better Auth users                     | `id`, `email`, `name`, `email_verified`, `image`, `role` (`customer`/`admin`), timestamps                                                                                       |
+| `sessions`         | Better Auth sessions                  | `id`, `user_id`, `expires_at`, `token`, `ip_address`, `user_agent`                                                                                                              |
+| `accounts`         | Better Auth OAuth accounts (future)   | `id`, `user_id`, `provider`, `provider_account_id`, ...                                                                                                                         |
+| `verifications`    | Better Auth email verification tokens | `id`, `identifier`, `value`, `expires_at`                                                                                                                                       |
+| `categories`       | Product categories                    | `id`, `slug`, `name`, `description`, `image_url`, `parent_id` (self-fk, nullable)                                                                                               |
+| `products`         | Catalog item                          | `id`, `slug`, `name`, `description`, `price_cents`, `currency`, `category_id`, `inventory`, `is_published`, `created_at`                                                        |
+| `product_images`   | Multiple images per product           | `id`, `product_id`, `url`, `alt`, `position`                                                                                                                                    |
+| `product_variants` | Optional size/color variants          | `id`, `product_id`, `name`, `sku`, `price_cents`, `inventory`                                                                                                                   |
+| `addresses`        | User saved addresses                  | `id`, `user_id`, `line1`, `line2`, `city`, `state`, `postal_code`, `country`, `is_default`                                                                                      |
+| `carts`            | Persistent cart for logged-in users   | `id`, `user_id`, `created_at`, `updated_at`                                                                                                                                     |
+| `cart_items`       | Cart line items                       | `id`, `cart_id`, `product_id`, `variant_id`, `quantity`                                                                                                                         |
+| `orders`           | Placed orders                         | `id`, `user_id` (nullable for guest), `status`, `subtotal_cents`, `tax_cents`, `shipping_cents`, `total_cents`, `stripe_payment_intent_id`, `shipping_address_id`, `created_at` |
+| `order_items`      | Order line items (snapshot prices)    | `id`, `order_id`, `product_id`, `variant_id`, `name_snapshot`, `price_cents_snapshot`, `quantity`                                                                               |
 
 **Indexes:** unique on `users.email`, `categories.slug`, `products.slug`; non-unique on `products.category_id`, `orders.user_id`, `orders.status`.
 
@@ -180,15 +186,18 @@ ecommerce/
 
 Each phase ends with a runnable, demoable state. Estimated effort assumes one engineer working serially.
 
-### Phase 0 — Repo Hygiene & Tooling (~30 min)
+### Phase 0 — Repo Hygiene & Tooling (~30 min) ✅ Completed 2026-04-30
 
-- [ ] `.gitignore` covers `node_modules`, `.next`, `data/app.db*`, `public/uploads/*`, `.env*`
-- [ ] Decide package manager (pnpm recommended) and commit lockfile
-- [ ] Add `.editorconfig`, `.prettierrc`, `.nvmrc` (Node 20.9+)
-- [ ] Wire `simple-git-hooks` + `lint-staged` for pre-commit Prettier + ESLint --fix
-- [ ] Stub `.env.local.example` with placeholders (no real secrets)
+- [x] `.gitignore` covers `node_modules`, `.next`, `data/app.db*`, `public/uploads/*`, `.env*`
+- [x] Decide package manager (pnpm recommended) and commit lockfile — pnpm 10.28.0 pinned via `packageManager`; `pnpm-lock.yaml` committed
+- [x] Add `.editorconfig`, `.prettierrc`, `.nvmrc` (Node 20.9+) — `.nvmrc` set to `20.19.3`
+- [x] Wire `simple-git-hooks` + `lint-staged` for pre-commit Prettier + ESLint --fix — Prettier hook live now; ESLint `--fix` step will be added to `lint-staged` in Phase 1 once `create-next-app` installs ESLint
+- [x] Stub `.env.local.example` with placeholders (no real secrets)
+- [x] Bonus: `.prettierignore` added to keep `format:check` from scanning `node_modules`, lockfile, build artifacts
 
-**Exit criteria:** `git status` clean; `pnpm format` and `pnpm lint` both pass on an empty repo.
+**Phase 0 devDependencies installed:** `prettier@3.8.3`, `prettier-plugin-tailwindcss@0.6.14`, `simple-git-hooks@2.13.1`, `lint-staged@16.4.0`.
+
+**Exit criteria:** `git status` clean; `pnpm format` and `pnpm lint` both pass on an empty repo. _(`pnpm format` passes; `pnpm lint` script lands in Phase 1 with the Next.js ESLint config.)_
 
 ---
 
@@ -353,14 +362,14 @@ STRIPE_WEBHOOK_SECRET=whsec_...   # from `stripe listen`
 
 ## 7. Risks & Mitigations
 
-| Risk | Mitigation |
-|---|---|
-| `better-sqlite3` native build fails on `pnpm install` | Document Node 20.9+ requirement; if Node ABI mismatch, suggest `pnpm rebuild better-sqlite3` |
-| Tailwind v4 + shadcn token mismatches | shadcn 4.6.0's `init` already targets v4 — use it instead of hand-wiring |
-| Next 16 + React 19 churn breaking a third-party lib | All chosen libs (Better Auth, RHF, Zustand, lucide, sonner, next-themes) declare React 19 / Next 16 in peers as of this writing |
-| Drizzle-kit not auto-generating FTS5 tables | Hand-author one migration file for FTS5 + triggers; commit it alongside generated ones |
-| Stripe webhook unreachable from cloud | Use `stripe listen --forward-to` — the only thing that "leaves localhost" is the CLI tunnel, and it's optional (orders can be marked paid manually for offline demos) |
-| TypeScript 6.0 ecosystem gaps | Pin to 5.9.x; revisit in 2–3 months |
+| Risk                                                  | Mitigation                                                                                                                                                            |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `better-sqlite3` native build fails on `pnpm install` | Document Node 20.9+ requirement; if Node ABI mismatch, suggest `pnpm rebuild better-sqlite3`                                                                          |
+| Tailwind v4 + shadcn token mismatches                 | shadcn 4.6.0's `init` already targets v4 — use it instead of hand-wiring                                                                                              |
+| Next 16 + React 19 churn breaking a third-party lib   | All chosen libs (Better Auth, RHF, Zustand, lucide, sonner, next-themes) declare React 19 / Next 16 in peers as of this writing                                       |
+| Drizzle-kit not auto-generating FTS5 tables           | Hand-author one migration file for FTS5 + triggers; commit it alongside generated ones                                                                                |
+| Stripe webhook unreachable from cloud                 | Use `stripe listen --forward-to` — the only thing that "leaves localhost" is the CLI tunnel, and it's optional (orders can be marked paid manually for offline demos) |
+| TypeScript 6.0 ecosystem gaps                         | Pin to 5.9.x; revisit in 2–3 months                                                                                                                                   |
 
 ---
 
