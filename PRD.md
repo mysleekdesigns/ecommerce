@@ -3,7 +3,7 @@
 > A self-contained, fully local ecommerce web application. No cloud services required.
 > All data lives in a local SQLite file. Stripe runs in test mode against the local server.
 
-**Last updated:** 2026-04-30 (Phase 1 complete)
+**Last updated:** 2026-05-02 (Phase 2 complete)
 **Target environment:** macOS / local development only
 **Node runtime:** ≥ 20.9 (required by Next 16 + better-sqlite3 12)
 
@@ -231,20 +231,29 @@ Each phase ends with a runnable, demoable state. Estimated effort assumes one en
 
 ---
 
-### Phase 2 — Database & Schema (~2–3 h)
+### Phase 2 — Database & Schema (~2–3 h) ✅ Completed 2026-05-02
 
-- [ ] Install: `pnpm add drizzle-orm@0.45.2 better-sqlite3@12.9.0`
-- [ ] Install dev: `pnpm add -D drizzle-kit@0.31.10 @types/better-sqlite3 tsx`
-- [ ] Create `data/` directory; gitignore the `.db` files
-- [ ] `drizzle.config.ts`: dialect `sqlite`, schema `./lib/db/schema.ts`, out `./data/migrations`, dbCredentials `./data/app.db`
-- [ ] `lib/db/index.ts`: singleton Drizzle client wrapping a better-sqlite3 connection (`globalThis` cache for hot-reload safety)
-- [ ] `lib/db/schema.ts`: define all tables from §4. Use `sqliteTable`, `text`, `integer`, `integer({ mode: 'timestamp' })`, foreign keys with `onDelete: 'cascade'` where appropriate
-- [ ] Generate first migration: `pnpm drizzle-kit generate`; apply: `pnpm drizzle-kit migrate`
-- [ ] Add FTS5 virtual table + triggers in a hand-written migration file (drizzle-kit doesn't generate FTS automatically)
-- [ ] `lib/db/seed.ts`: insert ~5 categories, ~25 products with images sourced from `public/uploads/seed/`, 1 admin user, 1 customer user
-- [ ] `package.json` scripts: `db:generate`, `db:migrate`, `db:studio`, `db:seed`, `db:reset` (deletes file + re-runs migrate + seed)
+- [x] Install: `pnpm add drizzle-orm@0.45.2 better-sqlite3@12.9.0`
+- [x] Install dev: `pnpm add -D drizzle-kit@0.31.10 @types/better-sqlite3 tsx`
+- [x] Create `data/` directory; gitignore the `.db` files (sidecars `.db-journal`, `.db-wal`, `.db-shm` already covered in Phase 0)
+- [x] `drizzle.config.ts`: dialect `sqlite`, schema `./lib/db/schema.ts`, out `./data/migrations`, dbCredentials reads `DATABASE_URL` (strips `file:` prefix), falls back to `./data/app.db`
+- [x] `lib/db/index.ts`: singleton Drizzle client wrapping a `better-sqlite3` connection. `globalThis` cache for hot-reload safety. `journal_mode = WAL` and `foreign_keys = ON` enabled at connection time. Re-exports `* from './schema'`
+- [x] `lib/db/schema.ts`: 13 tables from §4 — `users`, `sessions`, `accounts`, `verifications` (Better Auth shape), `categories`, `products`, `productImages`, `productVariants`, `addresses`, `carts`, `cartItems`, `orders`, `orderItems`. Camel-case TS identifiers map to snake_case SQL columns. UUID primary keys via `crypto.randomUUID()` `$defaultFn`. Booleans use `integer({ mode: 'boolean' })`; timestamps use `integer({ mode: 'timestamp' })` with `$defaultFn(() => new Date())` and `$onUpdateFn` on `updated_at`. Self-FK on `categories.parentId` uses the `(): AnySQLiteColumn` pattern to break the type cycle. Indexes: unique on `users.email`, `categories.slug`, `products.slug`, `sessions.token`, `carts.userId`, `orders.stripePaymentIntentId`; named non-unique on `products.category_id`, `orders.user_id`, `orders.status`. Each table also exports `Type` / `NewType` from `$inferSelect` / `$inferInsert` (26 type exports total)
+- [x] Generated first migration: `pnpm db:generate` produced `data/migrations/0000_shallow_vanisher.sql` covering all 13 tables. Applied via `pnpm db:migrate` (custom tsx runner at `lib/db/migrate.ts` — opens its own better-sqlite3 connection, no `'server-only'` import)
+- [x] Hand-authored FTS5 migration: `data/migrations/0001_products_fts.sql` creates `products_fts` virtual table over `products(name, description)` with `tokenize='porter unicode61'`, plus `products_fts_ai` / `products_fts_ad` / `products_fts_au` sync triggers. Manually appended an entry to `data/migrations/meta/_journal.json` (drizzle-kit's migrator reads the journal in order and runs the `.sql` files; the snapshot file was duplicated as `0001_snapshot.json` so future `db:generate` runs continue cleanly)
+- [x] `lib/db/seed.ts`: idempotent — wraps everything in a synchronous `db.transaction` (better-sqlite3 transactions are synchronous), deletes in reverse-FK order then inserts: 5 categories (Apparel / Footwear / Accessories / Home Goods / Electronics), 25 products (5 per category, 2 left unpublished for admin testing), 25 `product_images` rows pointing at local SVG placeholders, 9 size variants (S/M/L) across 3 apparel products, 2 users (`admin@local.test` role `admin`, `customer@local.test` role `customer`). Better Auth credential rows are intentionally deferred to Phase 3
+- [x] 30 SVG placeholder images committed at `public/uploads/seed/` (5 category + 25 product, 600×600, system font, color-coded per category) so the storefront has real-looking imagery without external deps. `public/uploads/seed/.gitkeep` ensures the dir is tracked
+- [x] `package.json` scripts added: `db:generate` (drizzle-kit), `db:migrate` (tsx runner), `db:studio` (drizzle-kit), `db:seed` (tsx), `db:reset` (tsx — deletes `app.db` + sidecars then shells `db:migrate` then `db:seed`)
+- [x] **Bonus:** `.npmrc` migrated from `only-built-dependencies="[\"...\"]"` (which pnpm 10 didn't honor) to YAML-array form (`only-built-dependencies[]=better-sqlite3` etc.) so the better-sqlite3 native binding compiles automatically on `pnpm install`. Covers `better-sqlite3`, `sharp`, `esbuild`, `simple-git-hooks`, `unrs-resolver`, `msw`
 
-**Exit criteria:** `pnpm db:reset` builds a fresh `data/app.db` with seed data. `pnpm db:studio` opens Drizzle Studio and shows the rows.
+**Phase 2 dependencies installed:** `drizzle-orm@0.45.2`, `better-sqlite3@12.9.0`. Dev: `drizzle-kit@0.31.10`, `@types/better-sqlite3@7.6.13`, `tsx@4.21.0`.
+
+**Phase 2 deviations:**
+
+- **`lib/db/index.ts` does not import `'server-only'`** (the package isn't installed). Replaced with a comment marker. If we later install `server-only` (zero-cost helper), swap the comment back to `import 'server-only';`.
+- **`db:reset` requires writable Unix-domain socket** for `tsx`'s IPC. In a sandboxed shell (e.g. Claude Code's default mode), `tsx` will fail with `EPERM ... .pipe`. Outside the sandbox (or in a normal terminal) it runs cleanly — documented for the README in Phase 8.
+
+**Exit criteria:** ✅ `pnpm db:reset` builds a fresh `data/app.db` (44 KB) populated with 5 categories, 25 products, 25 images, 9 variants, 2 users. The `products_fts` MATCH query returns hits (`MATCH 'shirt'` → 2 rows). `pnpm db:studio` is wired and ready (not exercised in this phase since it opens a browser UI).
 
 ---
 

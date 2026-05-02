@@ -43,6 +43,9 @@ data/*.db-wal
 data/*.db-shm
 public/uploads/*
 !public/uploads/.gitkeep
+# Seed assets ARE checked in (they're project content, not user uploads)
+!public/uploads/seed/
+!public/uploads/seed/**
 
 # OS noise
 .DS_Store
